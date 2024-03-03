@@ -1,7 +1,8 @@
 # flutter-bloc.nvim
 A Neovim plugin for generating bloc and cubit boiler plate code.
 
-![Preview](https://i.imgur.com/4GtjuPW.gif)
+[![Preview](https://i.imgur.com/4GtjuPW.gif)](https://github.com/wa11breaker/flutter-bloc.nvim/assets/28669642/de135918-93ce-4157-95ab-9ad5971c45b4
+)
 
 #### Features
 - Generate bloc boiler plate code
@@ -9,6 +10,8 @@ A Neovim plugin for generating bloc and cubit boiler plate code.
 
 #### Installation
 - With [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+
 ```sh
 {
   'wa11breaker/flutter-bloc.nvim'
