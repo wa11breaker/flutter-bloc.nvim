@@ -1,0 +1,43 @@
+*flutter-bloc.txt*   Neovim plugin for generating BLoC and Cubit boilerplate code
+*flutter-bloc.nvim*
+
+Author: Akshay Asok
+
+CONTENTS                                        *flutter-bloc-contents*
+Introduction                                    |flutter-bloc-introduction|
+Features                                        |flutter-bloc-features|
+Installation                                    |flutter-bloc-installation|
+Usage                                           |flutter-bloc-usage|
+==============================================================================
+INTRODUCTION                                    *flutter-bloc-introduction*
+
+This is a Neovim plugin for generating BLoC and Cubit boilerplate code.
+
+==============================================================================
+FEATURES                                        *flutter-bloc-features*
+- Generate BLoC boilerplate code
+- Generate Cubit boilerplate code
+
+==============================================================================
+INSTALLATION                                    *flutter-bloc-installation*
+- With lazy.nvim:
+{
+  'wa11breaker/flutter-bloc.nvim'
+}
+
+- With packer.nvim:
+use {
+  'wa11breaker/flutter-bloc.nvim'
+}
+
+==============================================================================
+USAGE                                           *flutter-bloc-usage*
+This plugin provides two commands for generating boilerplate code:
+- `FlutterCreateBloc`
+- `FlutterCreateCubit`
+
+Alternatively, users can define their custom commands.
+
+Example custom key mappings in Lua:
+vim.keymap.set("n", "<Leader>cfb", "<cmd>lua require('flutter-bloc').create_bloc()<cr>", { desc = '[C]reate [F]lutter [B]loc' })
+vim.keymap.set("n", "<Leader>cfc", "<cmd>lua require('flutter-bloc').create_cubit()<cr>", { desc = '[C]reate [F]lutter [C]ubit' })

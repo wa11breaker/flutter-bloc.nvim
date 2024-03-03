@@ -6,8 +6,8 @@ bloc.create_bloc_template = function(bloc_name)
 
     local template = string.format(
         [[
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 part '%s_event.dart';
 part '%s_state.dart';
