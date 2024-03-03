@@ -1,6 +1,8 @@
 # flutter-bloc.nvim
 A Neovim plugin for generating bloc and cubit boiler plate code.
 
+![Preview](https://i.imgur.com/4GtjuPW.gif)
+
 #### Features
 - Generate bloc boiler plate code
 - Generate cubit boiler plate code
