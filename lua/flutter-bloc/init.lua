@@ -93,4 +93,32 @@ M.create_bloc = function()
     vim.cmd("edit " .. bloc_path .. files[1])
 end
 
+M.create_cubit_template = function(cubit_name)
+    local snake_case_cubit_name = util.camel_to_snake(cubit_name)
+
+    local template = {
+        cubit = bloc_template.create_cubit_template(cubit_name),
+        state = bloc_template.create_cubit_state_template(cubit_name),
+        cubit_name = snake_case_cubit_name .. "_cubit.dart",
+        state_name = snake_case_cubit_name .. "_state.dart"
+    }
+
+    return template
+end
+
+M.create_bloc_template = function(bloc_name)
+    local snake_case_bloc_name = util.camel_to_snake(bloc_name)
+
+    local template = {
+        bloc = bloc_template.create_bloc_template(bloc_name),
+        state = bloc_template.create_bloc_state_template(bloc_name),
+        event = bloc_template.create_event_template(bloc_name),
+        bloc_name = snake_case_bloc_name .. "_bloc.dart",
+        state_name = snake_case_bloc_name .. "_state.dart",
+        event_name = snake_case_bloc_name .. "_event.dart"
+    }
+
+    return template
+end
+
 return M
