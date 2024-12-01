@@ -1,13 +1,22 @@
-local util = {}
+local M = {}
 
-util.camel_to_snake = function(camelCase)
+M.camel_to_snake = function(camelCase)
     return camelCase:gsub("%u", "_%1"):gsub("^_", ""):lower()
 end
 
-util.get_current_buffer_path = function()
+M.get_current_buffer_path = function()
     local buf_path = vim.fn.expand("%")
     local buf_directory = buf_path:match("(.*[/\\])")
     return buf_directory
 end
 
-return util
+
+function M.write_file(filepath, content)
+    local file = io.open(filepath, 'w')
+    if file then
+        file:write(content)
+        file:close()
+    end
+end
+
+return M
