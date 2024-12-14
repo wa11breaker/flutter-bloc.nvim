@@ -28,7 +28,7 @@ M.get_equatable_bloc_template = function(bloc_name)
     local snake_case_bloc_name = util.camel_to_snake(bloc_name)
     local pascal_case_bloc_name = bloc_name
 
-    return template.equatable_bloc_default_template
+    return template.equatalbe_bloc_template
         :gsub("${snakeCaseBlocName}", snake_case_bloc_name)
         :gsub("${pascalCaseBlocName}", pascal_case_bloc_name)
         :gsub("${blocEvent}", pascal_case_bloc_name .. "Event")

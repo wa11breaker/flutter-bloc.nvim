@@ -31,6 +31,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
   }
 }
 ]]
+
 M.freezed_bloc_template = [[
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -61,13 +62,13 @@ M.equatalbe_bloc_state = [[
 part of '${snakeCaseBlocName}_bloc.dart';
 
 ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
-    const ${pascalCaseBlocName}State();
+  const ${pascalCaseBlocName}State();
 
-    @override
-    List<Object> get props => [];
+  @override
+  List<Object> get props => [];
 }
 
-${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 ]]
 
 M.freezed_bloc_state = [[
@@ -75,7 +76,7 @@ part of '${snakeCaseBlocName}_bloc.dart';
 
 @freezed
 class ${pascalCaseBlocName} with _\$${pascalCaseBlocName} {
-    const factory ${pascalCaseBlocName}.initial() = _Initial;
+  const factory ${pascalCaseBlocName}.initial() = _Initial;
 }
 ]]
 
@@ -90,10 +91,10 @@ M.equatable_bloc_event = [[
 part of '${snakeCaseBlocName}_bloc.dart';
 
 ${classPrefix} class ${pascalCaseBlocName}Event extends Equatable {
-    const ${pascalCaseBlocName}Event();
+  const ${pascalCaseBlocName}Event();
 
-    @override
-    List<Object> get props => [];
+  @override
+  List<Object> get props => [];
 }
 ]]
 
@@ -101,13 +102,78 @@ M.freezed_bloc_event = [[
 part of '${snakeCaseBlocName}_bloc.dart';
 
 ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
-    const ${pascalCaseBlocName}State();
+  const ${pascalCaseBlocName}State();
 
-    @override
-    List<Object> get props => [];
+  @override
+  List<Object> get props => [];
 }
 
 ${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+]]
+
+M.default_cubit_template = [[
+import 'package:bloc/bloc.dart';
+import 'package:meta/meta.dart';
+
+part '${snakeCaseCubitName}_state.dart';
+
+class ${pascalCaseCubitName}Cubit extends Cubit<${cubitState}> {
+  ${pascalCaseCubitName}Cubit() : super(${pascalCaseCubitName}Initial());
+}
+]]
+
+M.equatalbe_cubit_template = [[
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+
+part '${snakeCaseCubitName}_state.dart';
+
+class ${pascalCaseCubitName}Cubit extends Cubit<${cubitState}> {
+  ${pascalCaseCubitName}Cubit() : super(${pascalCaseCubitName}Initial());
+}
+]]
+
+M.freezed_cubit_template = [[
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part '${snakeCaseCubitName}_state.dart';
+part '${snakeCaseCubitName}_cubit.freezed.dart';
+
+class ${pascalCaseCubitName}Cubit extends Cubit<${cubitState}> {
+  ${pascalCaseCubitName}Cubit() : super(_Initial());
+}
+]]
+
+M.default_cubit_state = [[
+part of '${snakeCaseCubitName}_cubit.dart';
+
+@immutable
+${classPrefix} class ${pascalCaseCubitName}State {}
+
+class ${pascalCaseCubitName}Initial extends ${pascalCaseCubitName}State {}
+]]
+
+M.equatalbe_cubit_state = [[
+part of '${snakeCaseCubitName}_cubit.dart';
+
+${classPrefix} class ${pascalCaseCubitName}State extends Equatable {
+  const ${pascalCaseCubitName}State();
+
+  @override
+  List<Object> get props => [];
+}
+
+class ${pascalCaseCubitName}Initial extends ${pascalCaseCubitName}State {}
+]]
+
+M.freezed_cubit_state = [[
+part of '${snakeCaseCubitName}_cubit.dart';
+
+@freezed
+class ${pascalCaseCubitName}State with _\$${pascalCaseCubitName}State {
+  const factory ${pascalCaseCubitName}State.initial() = _Initial;
+}
 ]]
 
 return M
