@@ -5,40 +5,74 @@ A Neovim plugin for generating bloc and cubit boiler plate code.
 )
 
 #### Features
-- Generate bloc boiler plate code
-- Generate cubit boiler plate code
+- [x] Generate bloc boiler plate code
+- [x] Generate cubit boiler plate code
+- [ ] Code actions
 
 #### Installation
 - With [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 
-```sh
+```lua
 {
-  'wa11breaker/flutter-bloc.nvim'
+  'wa11breaker/flutter-bloc.nvim',
+  opts = {
+    bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
+    use_sealed_classes = false,
+  }
 }
 ```
 
 - With [packer.nvim](https://github.com/wbthomason/packer.nvim)
-```sh
+```lua
 use {
-  'wa11breaker/flutter-bloc.nvim'
+  'wa11breaker/flutter-bloc.nvim',
+  config = function()
+    require('flutter-bloc').setup({
+      bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
+      use_sealed_classes = false,
+    })
+  end
 }
 ```
 
-#### Usage
-This plugin offers two commands out of the box to generate boilerplate code:
+## Configuration Options
 
-- `FlutterCreateBloc`
-- `FlutterCreateCubit`
+- `bloc_type`: Specifies the type of BLoC generation
+  - `'default'`: Standard BLoC generation
+  - `'equatable'`: Uses Equatable for equality comparisons
+  - `'freezed'`: Generates code with Freezed immutable classes
 
-Alternatively, you can create your custom commands.
+- `use_sealed_classes`: Enables or disables sealed classes generation
 
-Example custom key mappings in Lua:
+## Usage
+
+### Built-in Commands
+
+The plugin provides two primary commands for code generation:
+
+- `:FlutterCreateBloc` - Create a new Bloc
+- `:FlutterCreateCubit` - Create a new Cubit
+
+### Custom Key Mappings
+
+You can add custom key mappings to streamline your workflow:
 
 ```lua
-vim.keymap.set("n", "<Leader>cfb", "<cmd>lua require('flutter-bloc').create_bloc()<cr>", { desc = '[C]reate [F]lutter [B]loc' })
-vim.keymap.set("n", "<Leader>cfc", "<cmd>lua require('flutter-bloc').create_cubit()<cr>", { desc = '[C]reate [F]lutter [C]ubit' })
+-- Create BLoC quickly
+vim.keymap.set("n", "<Leader>cfb", "<cmd>lua require('flutter-bloc').create_bloc()<cr>", { 
+  desc = '[C]reate [F]lutter [B]loc' 
+})
+
+-- Create Cubit quickly
+vim.keymap.set("n", "<Leader>cfc", "<cmd>lua require('flutter-bloc').create_cubit()<cr>", { 
+  desc = '[C]reate [F]lutter [C]ubit' 
+})
 ```
 
-#### Documentation
-See [`:help flutter-bloc.nvim`](https://github.com/wa11breaker/flutter-bloc.nvim/doc/flutter-bloc.txt)
+## Documentation
+
+For detailed documentation and advanced usage, refer to the help file:
+
+- `:help flutter-bloc.nvim`
+
