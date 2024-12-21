@@ -1,4 +1,5 @@
 local util = require("flutter-bloc.util")
+local code_action = require("flutter-bloc.code_action")
 
 local M = {}
 
@@ -12,6 +13,7 @@ local defaults = {
 function M.setup(options)
     -- Merge user options with defaults
     M.opts = vim.tbl_deep_extend("force", {}, defaults, options or {})
+    code_action.setup()
 end
 
 function M.create_bloc()
