@@ -16,9 +16,13 @@ A Neovim plugin for generating bloc and cubit boiler plate code.
 ```lua
 {
   'wa11breaker/flutter-bloc.nvim',
+  dependencies = {
+      "nvimtools/none-ls.nvim", -- Required for code actions
+  },
   opts = {
     bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
     use_sealed_classes = false,
+    enable_code_actions = true,
   }
 }
 ```
@@ -27,10 +31,14 @@ A Neovim plugin for generating bloc and cubit boiler plate code.
 ```lua
 use {
   'wa11breaker/flutter-bloc.nvim',
+  requires = {
+    'nvimtools/none-ls.nvim',
+  },
   config = function()
     require('flutter-bloc').setup({
       bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
       use_sealed_classes = false,
+      enable_code_actions = true,
     })
   end
 }
