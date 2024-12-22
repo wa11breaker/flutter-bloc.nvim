@@ -9,7 +9,7 @@ local bloc_builder_template = {
     "  },",
     ")"
 }
-local bloc_listnener_template = {
+local bloc_listener_template = {
     "BlocListener<MyBloc, MyBlocState>(",
     "  listener: (context, state) {",
     "    %s;",
@@ -138,7 +138,7 @@ local wrap_with_bloc_listener = function()
     if not widget then return end
 
     local formatted_content = format_widget_content(widget.widget_text)
-    local wrapped_widget = apply_template(bloc_listnener_template, formatted_content)
+    local wrapped_widget = apply_template(bloc_listener_template, formatted_content)
     write_widget(wrapped_widget, widget)
 end
 
