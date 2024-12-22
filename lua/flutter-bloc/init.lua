@@ -8,12 +8,15 @@ M.opts = {}
 local defaults = {
     bloc_type = 'default', -- 'default', 'equatable', 'freezed'
     use_sealed_classes = false,
+    enable_code_actions = true,
 }
 
 function M.setup(options)
     -- Merge user options with defaults
     M.opts = vim.tbl_deep_extend("force", {}, defaults, options or {})
-    code_action.setup()
+    if M.opts.enable_code_actions then
+        code_action.setup()
+    end
 end
 
 function M.create_bloc()
