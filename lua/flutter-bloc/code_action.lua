@@ -2,6 +2,164 @@ local null_ls = require("null-ls")
 
 local M = {}
 
+local bloc_builder_template = {
+    "BlocBuilder<MyBloc, MyBlocState>(",
+    "  builder: (context, state) {",
+    "    return %s;",
+    "  },",
+    ")"
+}
+local bloc_listnener_template = {
+    "BlocListener<MyBloc, MyBlocState>(",
+    "  listener: (context, state) {",
+    "    %s;",
+    "  },",
+    ")"
+}
+local bloc_provider_template = {
+    "BlocProvider<MyBloc>(",
+    "  create: (context) => MyBloc(),",
+    "  child: %s,",
+    ")"
+}
+local bloc_selector_template = {
+    "BlocSelector<MyBloc, MyBlocState, MyType>(",
+    "  selector: (state) {",
+    "    return state;",
+    "  },",
+    "  builder: (context, state) {",
+    "    return %s;",
+    "  },",
+    ")"
+}
+
+local function is_valid_node(node)
+    if not node then return false end
+
+    return node:type() == "identifier" or node:type() == "type_identifier"
+end
+
+local function get_node_text(bufnr, node)
+    if not node then return nil end
+    local sibling = node:next_sibling()
+    if not sibling then return nil end
+
+    local start_row, start_col = node:start()
+    local end_row, end_col = sibling:end_()
+
+    return vim.api.nvim_buf_get_text(
+        bufnr, start_row,
+        start_col, end_row,
+        end_col, {}
+    )
+end
+
+local get_widget_details = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    local node = vim.treesitter.get_node()
+    if not node then return nil end
+
+    local sibling = node:next_sibling()
+    if not sibling then return nil end
+
+    local start_row, start_col = node:start()
+    local end_row, end_col = sibling:end_()
+
+    return {
+        widget_name = vim.api.nvim_buf_get_text(
+            bufnr, start_row,
+            start_col, end_row,
+            end_col, {}
+        ),
+        widget_text = get_node_text(bufnr, node),
+        range = {
+            start_row = start_row,
+            start_col = start_col,
+            end_row = end_row,
+            end_col = end_col
+        },
+        bufnr = bufnr,
+    }
+end
+
+local write_widget = function(wrapped_widget, widget)
+    vim.api.nvim_buf_set_text(
+        widget.bufnr, widget.range.start_row,
+        widget.range.start_col, widget.range.end_row,
+        widget.range.end_col, wrapped_widget
+    )
+    vim.cmd("undojoin")
+    vim.lsp.buf.format({ async = false, bufnr = widget.bufnr, })
+end
+
+local function format_widget_content(widget_text)
+    -- Is its a single line widget
+    if #widget_text == 1 then
+        return widget_text[1]
+    end
+
+    -- For multi line widget
+    local result = {}
+    for i, line in ipairs(widget_text) do
+        if i == 1 then
+            table.insert(result, line)
+        else
+            table.insert(result, "    " .. line)
+        end
+    end
+
+    return table.concat(result, " ")
+end
+
+local function apply_template(template, widget_content)
+    local result = {}
+    for _, line in ipairs(template) do
+        if line:find("%%s") then
+            table.insert(result, string.format(line, widget_content))
+        else
+            table.insert(result, line)
+        end
+    end
+    return result
+end
+
+local wrap_with_bloc_builder = function()
+    local widget = get_widget_details()
+    if not widget then return end
+
+    local formatted_content = format_widget_content(widget.widget_text)
+    local wrapped_widget = apply_template(bloc_builder_template, formatted_content)
+    write_widget(wrapped_widget, widget)
+end
+
+local wrap_with_bloc_listener = function()
+    local widget = get_widget_details()
+    if not widget then return end
+
+    local formatted_content = format_widget_content(widget.widget_text)
+    local wrapped_widget = apply_template(bloc_listnener_template, formatted_content)
+    write_widget(wrapped_widget, widget)
+end
+
+local wrap_with_bloc_provider = function()
+    local widget = get_widget_details()
+    if not widget then return end
+
+    local formatted_content = format_widget_content(widget.widget_text)
+    local wrapped_widget = apply_template(bloc_provider_template, formatted_content)
+    write_widget(wrapped_widget, widget)
+end
+
+local wrap_with_bloc_selector = function()
+    local widget = get_widget_details()
+    if not widget then return end
+
+    local formatted_content = format_widget_content(widget.widget_text)
+    local wrapped_widget = apply_template(bloc_selector_template, formatted_content)
+    write_widget(wrapped_widget, widget)
+end
+
 function M.setup()
     null_ls.register({
         name = "flutter-bloc",
@@ -12,10 +170,22 @@ function M.setup()
                 local out = {}
                 local node = vim.treesitter.get_node()
 
-                if M.get_fun_predicate(node) then
+                if is_valid_node(node) then
                     table.insert(out, {
                         title  = "Wrap with BlocBuilder",
-                        action = M.wrap_with_bloc_builder,
+                        action = wrap_with_bloc_builder,
+                    })
+                    table.insert(out, {
+                        title  = "Wrap with BlocListener",
+                        action = wrap_with_bloc_listener,
+                    })
+                    table.insert(out, {
+                        title  = "Wrap with BlocProvider",
+                        action = wrap_with_bloc_provider,
+                    })
+                    table.insert(out, {
+                        title  = "Wrap with BlocSelector",
+                        action = wrap_with_bloc_selector,
                     })
                 end
 
@@ -23,83 +193,6 @@ function M.setup()
             end,
         },
     })
-end
-
-M.get_fun_predicate = function(node)
-    if not node then return false end
-
-    if node:type() == "identifier" then return true end
-    if node:type() == "type_identifier" then return true end
-
-    return false
-end
-
-
-local get_widget_details = function()
-    local bufnr = vim.api.nvim_get_current_buf()
-
-    local node = vim.treesitter.get_node()
-    if not node then
-        return nil
-    end
-
-    local sibling = node:next_sibling()
-    if not sibling then
-        return nil
-    end
-
-    local node_start, start_col = node:start()
-    local node_end, node_end_col = node:end_()
-
-    local widget_end, end_col = sibling:end_()
-
-    local widget = vim.api.nvim_buf_get_text(bufnr, node_start, start_col, widget_end, end_col, {})
-    local widget_name = vim.api.nvim_buf_get_text(bufnr, node_start, start_col, node_end, node_end_col, {})
-
-    return {
-        widget_name = widget_name,
-        widget = widget,
-        start_row = node_start,
-        start_col = start_col,
-        end_row = widget_end,
-        end_col = end_col,
-        bufnr = bufnr,
-    }
-end
-
-local write_widget = function(widget, template)
-    vim.api.nvim_buf_set_text(widget.bufnr, widget.start_row, widget.start_col, widget.end_row, widget.end_col, template)
-    vim.cmd("undojoin")
-    vim.lsp.buf.format({ async = false, bufnr = widget.bufnr, })
-end
-
-
-M.wrap_with_bloc_builder = function()
-    local widget = get_widget_details()
-    if not widget then
-        vim.notify("Could not find widget to wrap with BlocBuilder")
-        return
-    end
-
-    local snippet = {
-        "BlocBuilder<MyBloc, MyBlocState>(",
-        "  builder: (context, state) {",
-    }
-    for i = 1, #widget.widget do
-        if #widget.widget == 1 then
-            table.insert(snippet, "    return " .. widget.widget[i] .. ";")
-        elseif i == 1 then
-            table.insert(snippet, "    return " .. widget.widget[i])
-        elseif i == #widget.widget then
-            table.insert(snippet, "    " .. widget.widget[i] .. ";")
-        else
-            table.insert(snippet, "    " .. widget.widget[i])
-        end
-    end
-    table.insert(snippet, "  },")
-    table.insert(snippet, ")")
-
-    write_widget(widget, snippet)
 end
 
 return M
