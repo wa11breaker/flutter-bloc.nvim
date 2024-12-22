@@ -1,4 +1,5 @@
 local util = require("flutter-bloc.util")
+local code_action = require("flutter-bloc.code_action")
 
 local M = {}
 
@@ -7,11 +8,15 @@ M.opts = {}
 local defaults = {
     bloc_type = 'default', -- 'default', 'equatable', 'freezed'
     use_sealed_classes = false,
+    enable_code_actions = true,
 }
 
 function M.setup(options)
     -- Merge user options with defaults
     M.opts = vim.tbl_deep_extend("force", {}, defaults, options or {})
+    if M.opts.enable_code_actions then
+        code_action.setup()
+    end
 end
 
 function M.create_bloc()
