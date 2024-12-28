@@ -1,5 +1,6 @@
 # flutter-bloc.nvim
-A Neovim plugin for generating bloc and cubit boiler plate code.
+A Neovim plugin for generating bloc and cubit boilerplate code with support for code actions.
+
 
 [![Preview](https://i.imgur.com/4GtjuPW.gif)](https://github.com/wa11breaker/flutter-bloc.nvim/assets/28669642/de135918-93ce-4157-95ab-9ad5971c45b4
 )
@@ -7,7 +8,7 @@ A Neovim plugin for generating bloc and cubit boiler plate code.
 #### Features
 - [x] Generate bloc boiler plate code
 - [x] Generate cubit boiler plate code
-- [ ] Code actions
+- [x] Code actions
 
 #### Installation
 - With [lazy.nvim](https://github.com/folke/lazy.nvim)
@@ -57,10 +58,19 @@ use {
 
 ### Built-in Commands
 
-The plugin provides two primary commands for code generation:
+Commands
 
 - `:FlutterCreateBloc` - Create a new Bloc
 - `:FlutterCreateCubit` - Create a new Cubit
+
+Code Actions
+- Wrap with `BlocBuilder`
+- Wrap with `BlocSelector`
+- Wrap with `BlocListener`
+- Wrap with `BlocConsumer`
+- Wrap with `BlocProvider`
+- Wrap with `RepositoryProvider`
+
 
 ### Custom Key Mappings
 
@@ -83,4 +93,3 @@ vim.keymap.set("n", "<Leader>cfc", "<cmd>lua require('flutter-bloc').create_cubi
 For detailed documentation and advanced usage, refer to the help file:
 
 - `:help flutter-bloc.nvim`
-
