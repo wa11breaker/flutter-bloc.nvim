@@ -32,6 +32,15 @@ local bloc_selector_template = {
     "  },",
     ")"
 }
+local bloc_consumer_template = {
+    "BlocConsumer<MyBloc, MyBlocState>(",
+    "  listener: (context, state) {",
+    "  },",
+    "  builder: (context, state) {",
+    "    return %s;",
+    "  },",
+    ")"
+}
 
 local function is_valid_node(node)
     if not node then return false end
@@ -160,6 +169,15 @@ local wrap_with_bloc_selector = function()
     write_widget(wrapped_widget, widget)
 end
 
+local wrap_with_bloc_consumer = function()
+    local widget = get_widget_details()
+    if not widget then return end
+
+    local formatted_content = format_widget_content(widget.widget_text)
+    local wrapped_widget = apply_template(bloc_consumer_template, formatted_content)
+    write_widget(wrapped_widget, widget)
+end
+
 function M.setup()
     null_ls.register({
         name = "flutter-bloc",
@@ -186,6 +204,10 @@ function M.setup()
                     table.insert(out, {
                         title  = "Wrap with BlocSelector",
                         action = wrap_with_bloc_selector,
+                    })
+                    table.insert(out, {
+                        title  = "Wrap with BlocConsumer",
+                        action = wrap_with_bloc_consumer,
                     })
                 end
 
