@@ -17,26 +17,26 @@ M.get_default_bloc_state = function(bloc_name, use_sealed_classes)
     local classPrefix = use_sealed_classes and "sealed" or "abstract"
     local snake_case_bloc_name = util.camel_to_snake(bloc_name)
     local pascal_case_bloc_name = bloc_name
-    local subclassPrefix = use_sealed_classes and "sealed" or ""
+    local sub_class_prefix = use_sealed_classes and "final" or ""
 
     return template.default_bloc_state
         :gsub("${snakeCaseBlocName}", snake_case_bloc_name)
         :gsub("${pascalCaseBlocName}", pascal_case_bloc_name)
         :gsub("${classPrefix}", classPrefix)
-        :gsub("${subclassPrefix}", subclassPrefix)
+        :gsub("${subclassPrefix}", sub_class_prefix)
 end
 
 M.get_equatable_bloc_state = function(bloc_name, use_sealed_classes)
     local classPrefix = use_sealed_classes and "sealed" or "abstract"
     local snake_case_bloc_name = util.camel_to_snake(bloc_name)
     local pascal_case_bloc_name = bloc_name
-    local subclassPrefix = use_sealed_classes and "sealed" or ""
+    local sub_class_prefix = use_sealed_classes and "final" or ""
 
     return template.equatalbe_bloc_state
         :gsub("${snakeCaseBlocName}", snake_case_bloc_name)
         :gsub("${pascalCaseBlocName}", pascal_case_bloc_name)
         :gsub("${classPrefix}", classPrefix)
-        :gsub("${subclassPrefix}", subclassPrefix)
+        :gsub("${subclassPrefix}", sub_class_prefix)
 end
 
 M.get_freezed_bloc_state = function(bloc_name)
