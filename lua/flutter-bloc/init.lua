@@ -25,6 +25,7 @@ function M.create_bloc()
         print('The bloc name must not be empty')
         return
     end
+    bloc_name = util.to_pascal_case(bloc_name)
 
     -- Get bloc path from user
     local buf_directory = util.get_current_buffer_path()
@@ -73,6 +74,7 @@ function M.create_cubit()
         print('The cubit name must not be empty')
         return
     end
+    cubit_name = util.to_pascal_case(cubit_name)
 
     -- Get bloc path from user
     local cubit_directory = util.get_current_buffer_path()

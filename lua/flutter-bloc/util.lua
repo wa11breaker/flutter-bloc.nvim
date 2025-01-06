@@ -4,6 +4,10 @@ M.camel_to_snake = function(camelCase)
     return camelCase:gsub("%u", "_%1"):gsub("^_", ""):lower()
 end
 
+M.to_pascal_case = function(name)
+    return name:sub(1, 1):upper() .. name:sub(2)
+end
+
 M.get_current_buffer_path = function()
     local buf_path = vim.fn.expand("%")
     local buf_directory = buf_path:match("(.*[/\\])")
