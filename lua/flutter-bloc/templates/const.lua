@@ -3,6 +3,7 @@ local M = {}
 M.default_bloc_template = [[
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:flutter/material.dart';
 
 part '${snakeCaseBlocName}_event.dart';
 part '${snakeCaseBlocName}_state.dart';
@@ -55,7 +56,7 @@ part of '${snakeCaseBlocName}_bloc.dart';
 @immutable
 ${classPrefix} class ${pascalCaseBlocName}State {}
 
-${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 ]]
 
 M.equatalbe_bloc_state = [[
@@ -108,7 +109,7 @@ ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
   List<Object> get props => [];
 }
 
-${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 ]]
 
 M.default_cubit_template = [[
