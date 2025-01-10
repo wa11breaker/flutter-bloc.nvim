@@ -3,7 +3,6 @@ local M = {}
 M.default_bloc_template = [[
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:flutter/material.dart';
 
 part '${snakeCaseBlocName}_event.dart';
 part '${snakeCaseBlocName}_state.dart';
