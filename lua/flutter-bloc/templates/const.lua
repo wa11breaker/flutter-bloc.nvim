@@ -55,7 +55,7 @@ part of '${snakeCaseBlocName}_bloc.dart';
 @immutable
 ${classPrefix} class ${pascalCaseBlocName}State {}
 
-${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 ]]
 
 M.equatalbe_bloc_state = [[
@@ -108,7 +108,7 @@ ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
   List<Object> get props => [];
 }
 
-${subclassPrefix}class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
+${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 ]]
 
 M.default_cubit_template = [[
