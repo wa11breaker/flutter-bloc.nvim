@@ -65,7 +65,7 @@ ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
   const ${pascalCaseBlocName}State();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 ${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
@@ -94,7 +94,7 @@ ${classPrefix} class ${pascalCaseBlocName}Event extends Equatable {
   const ${pascalCaseBlocName}Event();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 ]]
 
@@ -105,7 +105,7 @@ ${classPrefix} class ${pascalCaseBlocName}State extends Equatable {
   const ${pascalCaseBlocName}State();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 ${subclassPrefix} class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
@@ -161,7 +161,7 @@ ${classPrefix} class ${pascalCaseCubitName}State extends Equatable {
   const ${pascalCaseCubitName}State();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class ${pascalCaseCubitName}Initial extends ${pascalCaseCubitName}State {}
