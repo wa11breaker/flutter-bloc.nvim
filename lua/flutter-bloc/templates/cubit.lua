@@ -37,7 +37,7 @@ M.get_freezed_cubit_template = function(cubit_name)
     local snake_case_cubit_name = util.camel_to_snake(cubit_name)
     local pascal_case_cubit_name = cubit_name
 
-    return template.cubit_default_template
+    return template.freezed_cubit_template
         :gsub("${snakeCaseCubitName}", snake_case_cubit_name)
         :gsub("${pascalCaseCubitName}", pascal_case_cubit_name)
         :gsub("${cubitState}", pascal_case_cubit_name .. "State")
