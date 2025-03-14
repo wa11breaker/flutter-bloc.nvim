@@ -26,9 +26,14 @@ function M.create_bloc()
         return
     end
 
-    -- Get bloc path from user
-    local buf_directory = util.get_current_buffer_path()
-    local bloc_path = vim.fn.input("Bloc path: ", buf_directory .. 'bloc/')
+    -- Get block path from user
+    -- Get buffer directory; if no buffer is open, get the curren
+    local current_directory = util.get_current_buffer_path()
+    if current_directory == nil then
+        current_directory = vim.fn.getcwd() .. '/lib/'
+    end
+
+    local bloc_path = vim.fn.input("Bloc path: ", current_directory .. 'bloc/')
     if bloc_path == "" then
         print('The bloc path must not be empty')
         return
@@ -74,9 +79,14 @@ function M.create_cubit()
         return
     end
 
-    -- Get bloc path from user
-    local cubit_directory = util.get_current_buffer_path()
-    local cubit_pat = vim.fn.input("Cubit path: ", cubit_directory .. 'cubit/')
+    -- Get block path from user
+    -- Get buffer directory; if no buffer is open, get the curren
+    local current_directory = util.get_current_buffer_path()
+    if current_directory == nil then
+        current_directory = vim.fn.getcwd() .. '/lib/'
+    end
+
+    local cubit_pat = vim.fn.input("Cubit path: ", current_directory .. 'cubit/')
     if cubit_pat == "" then
         print('The cubit path must not be empty')
         return
