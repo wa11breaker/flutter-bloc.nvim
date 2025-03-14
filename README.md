@@ -49,7 +49,7 @@ use {
 ## Configuration Options
 
 > [!NOTE]
-> Currently doesn't support plugin invocation from tree explorer to generate bloc inside a folder. You will get 'attempt to concatenate local 'buf_directory' (a nil value)' as the buf_direcotry will be nil.
+> Currently doesn't support plugin invocation from tree explorer to generate bloc inside a folder.
 
 - `bloc_type`: Specifies the type of BLoC generation
 
