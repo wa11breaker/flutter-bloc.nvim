@@ -2,7 +2,15 @@
 
 A Neovim plugin for generating bloc and cubit boilerplate code with support for code actions.
 
-[![Preview](https://i.imgur.com/4GtjuPW.gif)](https://github.com/wa11breaker/flutter-bloc.nvim/assets/28669642/de135918-93ce-4157-95ab-9ad5971c45b4)
+
+
+https://github.com/user-attachments/assets/f9bbe601-cd1c-4ba9-8e80-d73c4060d878
+
+
+https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
+
+
+
 
 #### Features
 
