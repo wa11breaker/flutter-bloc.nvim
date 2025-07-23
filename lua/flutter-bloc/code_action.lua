@@ -12,12 +12,13 @@ local bloc_builder_template = {
 local bloc_listener_template = {
     "BlocListener<MyBloc, MyBlocState>(",
     "  listener: (context, state) {",
-    "    %s;",
+    "    ",
     "  },",
+    "  child: %s,",
     ")"
 }
 local bloc_provider_template = {
-    "BlocProvider<MyBloc>(",
+    "BlocProvider(",
     "  create: (context) => MyBloc(),",
     "  child: %s,",
     ")"
