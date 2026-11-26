@@ -11,6 +11,8 @@ Configuration                                   |flutter-bloc-configuration|
 Usage                                           |flutter-bloc-usage|
 File explorers                                  |flutter-bloc-explorers|
 Code actions                                    |flutter-bloc-code-actions|
+Snippets                                        |flutter-bloc-snippets|
+Lint                                            |flutter-bloc-lint|
 ==============================================================================
 INTRODUCTION                                    *flutter-bloc-introduction*
 
@@ -20,7 +22,9 @@ This is a Neovim plugin for generating BLoC and Cubit boilerplate code.
 FEATURES                                        *flutter-bloc-features*
 - Generate BLoC boilerplate code
 - Generate Cubit boilerplate code
-- Code actions to wrap widgets with bloc widgets
+- Code actions to wrap widgets with bloc widgets and convert to Multi* widgets
+- Snippets
+- Bloc lint diagnostics
 
 ==============================================================================
 INSTALLATION                                    *flutter-bloc-installation*
@@ -44,9 +48,19 @@ CONFIGURATION                                   *flutter-bloc-configuration*
 Defaults:
 >lua
     require('flutter-bloc').setup({
-      bloc_type = 'default',      -- 'default', 'equatable' or 'freezed'
+      -- 'auto' picks freezed/equatable from pubspec.yaml, else 'default'
+      bloc_type = 'auto',         -- 'auto', 'default', 'equatable' or 'freezed'
       use_sealed_classes = false, -- 'sealed' base classes instead of 'abstract'
+      create_directory = true,    -- create files inside a bloc/ or cubit/ folder
+      -- Per-kind overrides: { type, use_sealed_classes, create_directory }
+      bloc = {},
+      cubit = {},
       enable_code_actions = true,
+      enable_snippets = true,
+      lint = {
+        enabled = true,           -- only starts when the `bloc` CLI is installed
+        cmd = { 'bloc', 'language-server' },
+      },
     })
 <
 ==============================================================================
@@ -63,8 +77,9 @@ USAGE                                           *flutter-bloc-usage*
                         and state files.
 
 The name can be typed in any case (`counter`, `user_profile`, `UserProfile`).
-The suggested path is `[dir]/bloc/` (or `cubit/`), where [dir] defaults to
-the folder under the cursor in a file explorer, or the current file's folder.
+The suggested path is `[dir]/bloc/` (or `cubit/`, or just `[dir]/` when
+`create_directory` is false), where [dir] defaults to the folder under the
+cursor in a file explorer, or the current file's folder.
 Existing files are only overwritten after confirmation.
 
 Example key mappings:
@@ -102,6 +117,9 @@ CODE ACTIONS                                    *flutter-bloc-code-actions*
 With the cursor on a widget constructor such as `Text(...)`,
 `const Text(...)` or `Foo.named(...)`, |vim.lsp.buf.code_action()| offers:
 
+- Convert to MultiBlocProvider / MultiBlocListener / MultiRepositoryProvider
+  (on a BlocProvider, BlocListener or RepositoryProvider with a `child`;
+  directly nested widgets of the same kind are merged into one list)
 - Wrap with BlocBuilder
 - Wrap with BlocSelector
 - Wrap with BlocListener
@@ -113,5 +131,35 @@ The actions come from a small built-in language server named "flutter-bloc",
 so they appear next to those from dartls. Requires the dart tree-sitter
 parser. The buffer is formatted afterwards when an LSP client with
 formatting is attached.
+
+==============================================================================
+SNIPPETS                                        *flutter-bloc-snippets*
+
+Snippets are LSP completion items from the "flutter-bloc" language server, so
+any LSP completion (blink.cmp, nvim-cmp, |lsp-completion|) offers them.
+
+  Imports         importbloc, importflutterbloc, importbloctest
+  Classes         bloc, cubit, blocstate, blocevent, blocobserver
+  Handlers        onevent, _onevent
+  Widgets         blocprovider, multiblocprovider, repoprovider,
+                  multirepoprovider, blocbuilder, blocselector,
+                  bloclistener, multibloclistener, blocconsumer
+  Lookups         blocof, repoof, read, watch, select
+  Tests           bloctest, mockbloc, _mockbloc, mockcubit, _mockcubit,
+                  mock, _mock, fake, _fake
+  Freezed         fstate, fevent
+
+==============================================================================
+LINT                                            *flutter-bloc-lint*
+
+The bloc linter (https://bloclibrary.dev/lint/) runs as a language server
+from the `bloc` CLI:
+>sh
+    dart pub global activate bloc_tools
+<
+`~/.pub-cache/bin` must be on your PATH. The server ("bloc") is started for
+Dart files and `analysis_options.yaml` inside projects with a pubspec.yaml.
+Rules are configured in analysis_options.yaml. Nothing runs when the CLI is
+not installed.
 
  vim:tw=78:ts=8:ft=help:norl:

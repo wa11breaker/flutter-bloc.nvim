@@ -16,7 +16,10 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 
 - [x] Generate bloc boiler plate code
 - [x] Generate cubit boiler plate code
-- [x] Code actions
+- [x] Code actions (wrap with bloc widgets, convert to Multi* widgets)
+- [x] Snippets
+- [x] Create from file explorers
+- [x] [Bloc lint](https://bloclibrary.dev/lint/) diagnostics
 
 #### Installation
 
@@ -26,7 +29,7 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 {
   'wa11breaker/flutter-bloc.nvim',
   opts = {
-    bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
+    bloc_type = 'auto', -- Choose from: 'auto', 'default', 'equatable', 'freezed'
     use_sealed_classes = false,
     enable_code_actions = true,
   }
@@ -40,7 +43,7 @@ use {
   'wa11breaker/flutter-bloc.nvim',
   config = function()
     require('flutter-bloc').setup({
-      bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
+      bloc_type = 'auto', -- Choose from: 'auto', 'default', 'equatable', 'freezed'
       use_sealed_classes = false,
       enable_code_actions = true,
     })
@@ -52,13 +55,24 @@ use {
 
 - `bloc_type`: Specifies the type of BLoC generation
 
+  - `'auto'` (default): Picks `freezed` or `equatable` from the project's `pubspec.yaml` dependencies, otherwise `default`
   - `'default'`: Standard BLoC generation
   - `'equatable'`: Uses Equatable for equality comparisons
   - `'freezed'`: Generates code with Freezed immutable classes
 
 - `use_sealed_classes`: Enables or disables sealed classes generation
 
-- `enable_code_actions`: Adds the "Wrap with ..." actions to Neovim's native code actions (`vim.lsp.buf.code_action()`, `gra` by default). Requires the dart tree-sitter parser.
+- `create_directory`: Creates the files inside a `bloc/` or `cubit/` folder (default `true`)
+
+- `bloc` / `cubit`: Per-kind overrides of the options above, e.g. `cubit = { type = 'equatable', use_sealed_classes = true, create_directory = false }`
+
+- `enable_code_actions`: Adds the bloc actions to Neovim's native code actions (`vim.lsp.buf.code_action()`, `gra` by default). Requires the dart tree-sitter parser.
+
+- `enable_snippets`: Offers bloc snippets as LSP completion items (default `true`)
+
+- `lint.enabled`: Starts the bloc language server for lint diagnostics when the `bloc` CLI is installed (default `true`)
+
+- `lint.cmd`: Command for the bloc language server (default `{ 'bloc', 'language-server' }`)
 
 ## Usage
 
@@ -73,12 +87,42 @@ The name can be typed in any case (`counter`, `user_profile` or `UserProfile`); 
 
 Code Actions (place the cursor on a widget constructor, e.g. `Text(...)`)
 
+- Convert to `MultiBlocProvider` / `MultiBlocListener` / `MultiRepositoryProvider` (nested providers or listeners of the same kind are merged into one list)
 - Wrap with `BlocBuilder`
 - Wrap with `BlocSelector`
 - Wrap with `BlocListener`
 - Wrap with `BlocConsumer`
 - Wrap with `BlocProvider`
 - Wrap with `RepositoryProvider`
+
+### Snippets
+
+Snippets are served by the plugin's built-in language server, so they show up in any LSP completion (blink.cmp, nvim-cmp or native completion) without a snippet engine.
+
+| Prefix | Description |
+| --- | --- |
+| `importbloc`, `importflutterbloc`, `importbloctest` | Imports |
+| `bloc`, `cubit` | Bloc / Cubit class |
+| `onevent`, `_onevent` | Event handler / handler method |
+| `blocstate`, `blocevent` | State / Event class |
+| `blocobserver` | BlocObserver class |
+| `blocprovider`, `multiblocprovider` | BlocProvider / MultiBlocProvider |
+| `repoprovider`, `multirepoprovider` | RepositoryProvider / MultiRepositoryProvider |
+| `blocbuilder`, `blocselector`, `bloclistener`, `multibloclistener`, `blocconsumer` | Bloc widgets |
+| `blocof`, `repoof`, `read`, `watch`, `select` | Lookups |
+| `bloctest`, `mockbloc`, `_mockbloc`, `mockcubit`, `_mockcubit` | bloc_test helpers |
+| `mock`, `_mock`, `fake`, `_fake` | mocktail Mock / Fake classes |
+| `fstate`, `fevent` | Freezed state / event |
+
+### Lint
+
+The official [bloc linter](https://bloclibrary.dev/lint/) runs as a language server from the `bloc` CLI. Install it and make sure `~/.pub-cache/bin` is on your `PATH`:
+
+```sh
+dart pub global activate bloc_tools
+```
+
+Then enable rules in `analysis_options.yaml` (see the [configuration docs](https://bloclibrary.dev/lint/configuration/)). The plugin starts the server for Dart files and `analysis_options.yaml` in Flutter projects; nothing runs if the CLI is not installed.
 
 ### File Explorers
 
