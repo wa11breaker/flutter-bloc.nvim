@@ -4,9 +4,18 @@ local templates = require("flutter-bloc.templates")
 local M = {}
 
 local defaults = {
-    bloc_type = "default", -- "default", "equatable" or "freezed"
+    bloc_type = "auto", -- "auto" (from pubspec.yaml), "default", "equatable" or "freezed"
     use_sealed_classes = false,
+    create_directory = true, -- create files inside a bloc/ or cubit/ folder
+    -- Per-kind overrides: { type = ..., use_sealed_classes = ..., create_directory = ... }
+    bloc = {},
+    cubit = {},
     enable_code_actions = true,
+    enable_snippets = true,
+    lint = {
+        enabled = true, -- only starts when the `bloc` CLI (bloc_tools) is installed
+        cmd = { "bloc", "language-server" },
+    },
     -- filetype -> function(bufnr) returning the path under the cursor
     explorers = require("flutter-bloc.explorers"),
 }
@@ -19,17 +28,62 @@ local parts = {
     cubit = { "cubit", "state" },
 }
 
+local function valid_type(type)
+    return type == "auto" or templates.bloc[type] ~= nil
+end
+
 function M.setup(options)
     M.opts = vim.tbl_deep_extend("force", vim.deepcopy(defaults), options or {})
 
-    if not templates.bloc[M.opts.bloc_type] then
-        util.notify("Unknown bloc_type '" .. tostring(M.opts.bloc_type) .. "', using 'default'", vim.log.levels.WARN)
-        M.opts.bloc_type = "default"
+    for _, opts in ipairs({ M.opts, M.opts.bloc, M.opts.cubit }) do
+        local key = opts == M.opts and "bloc_type" or "type"
+        if opts[key] ~= nil and not valid_type(opts[key]) then
+            util.notify("Unknown " .. key .. " '" .. tostring(opts[key]) .. "', using 'auto'", vim.log.levels.WARN)
+            opts[key] = "auto"
+        end
     end
 
-    if M.opts.enable_code_actions then
-        require("flutter-bloc.code_action").setup()
+    if M.opts.enable_code_actions or M.opts.enable_snippets then
+        require("flutter-bloc.lsp").setup(M.opts)
     end
+    if M.opts.lint.enabled then
+        require("flutter-bloc.lint").setup(M.opts.lint.cmd)
+    end
+end
+
+--- Settings for "bloc" or "cubit": per-kind overrides, then the shared options.
+local function kind_opts(kind)
+    local overrides = M.opts[kind] or {}
+    local function pick(key, shared_key)
+        if overrides[key] ~= nil then
+            return overrides[key]
+        end
+        return M.opts[shared_key or key]
+    end
+    return {
+        type = pick("type", "bloc_type"),
+        use_sealed_classes = pick("use_sealed_classes"),
+        create_directory = pick("create_directory"),
+    }
+end
+
+--- Template type from the project's pubspec.yaml dependencies.
+local function detect_type(dir)
+    local root = vim.fs.root(dir, "pubspec.yaml")
+    local file = root and io.open(vim.fs.joinpath(root, "pubspec.yaml"))
+    if not file then
+        return "default"
+    end
+    local pubspec = file:read("*a")
+    file:close()
+
+    if pubspec:match("\n%s+freezed_annotation:") or pubspec:match("\n%s+freezed:") then
+        return "freezed"
+    end
+    if pubspec:match("\n%s+equatable:") then
+        return "equatable"
+    end
+    return "default"
 end
 
 local function explorer_path(bufnr)
@@ -74,7 +128,9 @@ end
 
 --- Writes the bloc/cubit files for `name` into `dir` and opens the main file.
 function M.generate(kind, name, dir)
-    local sealed = M.opts.use_sealed_classes
+    local opts = kind_opts(kind)
+    local type = opts.type == "auto" and detect_type(dir) or opts.type
+    local sealed = opts.use_sealed_classes
     local vars = {
         name = name,
         file = util.to_snake(name),
@@ -86,7 +142,7 @@ function M.generate(kind, name, dir)
     local files, existing = {}, {}
     for _, part in ipairs(parts[kind]) do
         local path = vim.fs.joinpath(dir, vars.file .. "_" .. part .. ".dart")
-        table.insert(files, { path = path, template = templates[part][M.opts.bloc_type] })
+        table.insert(files, { path = path, template = templates[part][type] })
         if vim.uv.fs_stat(path) then
             table.insert(existing, vim.fs.basename(path))
         end
@@ -115,7 +171,10 @@ end
 local function create(kind, opts)
     local label = kind:sub(1, 1):upper() .. kind:sub(2)
     local dir = opts and opts.dir and vim.fs.normalize(vim.fn.expand(opts.dir)) or base_dir()
-    local default_path = vim.fn.fnamemodify(vim.fs.joinpath(dir, kind), ":~:.") .. "/"
+    if kind_opts(kind).create_directory then
+        dir = vim.fs.joinpath(dir, kind)
+    end
+    local default_path = vim.fn.fnamemodify(dir, ":~:.") .. "/"
 
     vim.ui.input({ prompt = label .. " name: " }, function(input)
         if input == nil then
