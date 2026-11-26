@@ -95,6 +95,8 @@ Code Actions (place the cursor on a widget constructor, e.g. `Text(...)`)
 - Wrap with `BlocProvider`
 - Wrap with `RepositoryProvider`
 
+Wrapping puts you on the bloc name; type it, then press `<Tab>` to move to the state (and any other placeholders). The code is formatted once you're done.
+
 ### Snippets
 
 Snippets are served by the plugin's built-in language server, so they show up in any LSP completion (blink.cmp, nvim-cmp or native completion) without a snippet engine.

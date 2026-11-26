@@ -4,11 +4,14 @@ local M = {}
 
 M.FORMAT_COMMAND = "flutter-bloc.format"
 
+M.WRAP_COMMAND = "flutter-bloc.wrap"
+
+-- Wrapper snippets; {{widget}} is the wrapped widget.
 local wrappers = {
     {
         title = "Wrap with BlocBuilder",
         template = [[
-BlocBuilder<MyBloc, MyBlocState>(
+BlocBuilder<${1:MyBloc}, ${2:MyBlocState}>(
   builder: (context, state) {
     return {{widget}};
   },
@@ -17,9 +20,9 @@ BlocBuilder<MyBloc, MyBlocState>(
     {
         title = "Wrap with BlocSelector",
         template = [[
-BlocSelector<MyBloc, MyBlocState, MyType>(
+BlocSelector<${1:MyBloc}, ${2:MyBlocState}, ${3:MyType}>(
   selector: (state) {
-    return state;
+    return ${4:state};
   },
   builder: (context, state) {
     return {{widget}};
@@ -29,16 +32,20 @@ BlocSelector<MyBloc, MyBlocState, MyType>(
     {
         title = "Wrap with BlocListener",
         template = [[
-BlocListener<MyBloc, MyBlocState>(
-  listener: (context, state) {},
+BlocListener<${1:MyBloc}, ${2:MyBlocState}>(
+  listener: (context, state) {
+    $3
+  },
   child: {{widget}},
 )]],
     },
     {
         title = "Wrap with BlocConsumer",
         template = [[
-BlocConsumer<MyBloc, MyBlocState>(
-  listener: (context, state) {},
+BlocConsumer<${1:MyBloc}, ${2:MyBlocState}>(
+  listener: (context, state) {
+    $3
+  },
   builder: (context, state) {
     return {{widget}};
   },
@@ -48,7 +55,7 @@ BlocConsumer<MyBloc, MyBlocState>(
         title = "Wrap with BlocProvider",
         template = [[
 BlocProvider(
-  create: (context) => MyBloc(),
+  create: (context) => ${1:MyBloc}(),
   child: {{widget}},
 )]],
     },
@@ -56,7 +63,7 @@ BlocProvider(
         title = "Wrap with RepositoryProvider",
         template = [[
 RepositoryProvider(
-  create: (context) => MyRepository(),
+  create: (context) => ${1:MyRepository}(),
   child: {{widget}},
 )]],
     },
@@ -215,10 +222,16 @@ function M.code_actions(bufnr, row, col)
     end
 
     local actions = {}
-    local widget = text(bufnr, unpack(call.range))
     for _, wrapper in ipairs(wrappers) do
-        local wrapped = util.render(wrapper.template, { widget = widget })
-        table.insert(actions, action(bufnr, wrapper.title, call.range, wrapped))
+        table.insert(actions, {
+            title = wrapper.title,
+            kind = "refactor.rewrite",
+            command = {
+                title = wrapper.title,
+                command = M.WRAP_COMMAND,
+                arguments = { { uri = vim.uri_from_bufnr(bufnr), range = call.range, template = wrapper.template } },
+            },
+        })
     end
 
     local converted = multi[call.name] and not call.const and call.args and to_multi(bufnr, call)
@@ -233,6 +246,61 @@ function M.format(bufnr)
         pcall(vim.cmd.undojoin)
         vim.lsp.buf.format({ bufnr = bufnr, async = false })
     end
+end
+
+--- Formats once the snippet session has ended; formatting during it would
+--- move the tabstops.
+local function format_after_snippet(bufnr)
+    vim.api.nvim_create_autocmd("ModeChanged", {
+        pattern = "*:n",
+        callback = function()
+            if vim.snippet.active() or vim.api.nvim_get_current_buf() ~= bufnr then
+                return
+            end
+            M.format(bufnr)
+            return true
+        end,
+    })
+end
+
+--- Wraps the widget in `args.range` with `args.template` as a snippet, so
+--- the placeholders (bloc name, state, ...) can be filled in with <Tab>.
+function M.wrap(args)
+    local bufnr = vim.uri_to_bufnr(args.uri)
+    local sr, sc, er, ec = unpack(args.range)
+    local widget = text(bufnr, sr, sc, er, ec)
+
+    -- The snippet can only be expanded at the cursor.
+    if bufnr ~= vim.api.nvim_get_current_buf() then
+        local wrapped = util.snippet_preview(util.render(args.template, { widget = util.snippet_escape(widget) }))
+        vim.api.nvim_buf_set_text(bufnr, sr, sc, er, ec, vim.split(wrapped, "\n"))
+        return
+    end
+
+    -- Re-indent the widget's continuation lines: drop the line's indentation
+    -- (vim.snippet.expand adds it back) and indent them like the template
+    -- line holding {{widget}}.
+    local indent = vim.api.nvim_buf_get_lines(bufnr, sr, sr + 1, true)[1]:match("^%s*")
+    local template_indent = args.template:match("([ \t]*)[^\n]*{{widget}}")
+    local lines = vim.split(widget, "\n")
+    for i = 2, #lines do
+        if lines[i]:sub(1, #indent) == indent then
+            lines[i] = lines[i]:sub(#indent + 1)
+        end
+        lines[i] = template_indent .. lines[i]
+    end
+    local body = util.render(args.template, { widget = util.snippet_escape(table.concat(lines, "\n")) })
+
+    vim.api.nvim_buf_set_text(bufnr, sr, sc, er, ec, { "" })
+
+    -- Normal mode can't put the cursor past the end of the line.
+    local virtualedit = vim.wo.virtualedit
+    vim.wo.virtualedit = "onemore"
+    vim.api.nvim_win_set_cursor(0, { sr + 1, sc })
+    vim.snippet.expand(body)
+    vim.wo.virtualedit = virtualedit
+
+    format_after_snippet(bufnr)
 end
 
 return M

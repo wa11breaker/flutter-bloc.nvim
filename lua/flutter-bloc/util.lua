@@ -19,6 +19,35 @@ function M.render(template, vars)
     end))
 end
 
+--- Snippet body as plain text, with placeholders filled in with their defaults.
+function M.snippet_preview(body)
+    -- Set escaped characters aside so they aren't read as tabstops.
+    local escaped = {}
+    body = body:gsub("\\([\\$}])", function(char)
+        table.insert(escaped, char)
+        return "\0" .. #escaped .. "\0"
+    end)
+
+    local defaults = {}
+    body = body:gsub("%${(%d+):([^}]*)}", function(n, default)
+        defaults[n] = default
+        return default
+    end)
+    body = body:gsub("%${(%d+)}", function(n)
+        return defaults[n] or ""
+    end)
+    body = body:gsub("%$%d+", "")
+
+    return (body:gsub("%z(%d+)%z", function(i)
+        return escaped[tonumber(i)]
+    end))
+end
+
+--- Escapes text so a snippet inserts it literally.
+function M.snippet_escape(text)
+    return (text:gsub("[\\$}]", "\\%0"))
+end
+
 function M.write_file(path, content)
     local file, err = io.open(path, "w")
     if not file then

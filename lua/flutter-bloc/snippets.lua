@@ -1,4 +1,6 @@
 -- Bloc snippets served as LSP completion items (LSP snippet syntax).
+local util = require("flutter-bloc.util")
+
 local M = {}
 
 local snippets = {
@@ -164,19 +166,6 @@ sealed class ${1:Subject}State with _\$${1}State {
 local SNIPPET_KIND = vim.lsp.protocol.CompletionItemKind.Snippet
 local SNIPPET_FORMAT = vim.lsp.protocol.InsertTextFormat.Snippet
 
---- Snippet body with placeholders filled in with their defaults.
-local function preview(body)
-    local defaults = {}
-    body = body:gsub("%${(%d+):([^}]*)}", function(n, default)
-        defaults[n] = default
-        return default
-    end)
-    body = body:gsub("%${(%d+)}", function(n)
-        return defaults[n] or ""
-    end)
-    return (body:gsub("%$%d+", ""):gsub("\\%$", "$"))
-end
-
 function M.completion_items()
     local items = {}
     for _, s in ipairs(snippets) do
@@ -186,7 +175,7 @@ function M.completion_items()
             detail = s[2],
             insertText = s[3],
             insertTextFormat = SNIPPET_FORMAT,
-            documentation = { kind = "markdown", value = "```dart\n" .. preview(s[3]) .. "\n```" },
+            documentation = { kind = "markdown", value = "```dart\n" .. util.snippet_preview(s[3]) .. "\n```" },
         })
     end
     return items

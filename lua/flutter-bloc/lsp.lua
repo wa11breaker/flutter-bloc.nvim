@@ -72,6 +72,9 @@ function M.setup(opts)
             [code_action.FORMAT_COMMAND] = function(_, ctx)
                 code_action.format(ctx.bufnr)
             end,
+            [code_action.WRAP_COMMAND] = function(cmd)
+                code_action.wrap(cmd.arguments[1])
+            end,
         },
     }
 
