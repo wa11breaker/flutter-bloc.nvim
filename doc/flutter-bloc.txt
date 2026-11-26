@@ -127,10 +127,13 @@ With the cursor on a widget constructor such as `Text(...)`,
 - Wrap with BlocProvider
 - Wrap with RepositoryProvider
 
+Wrapping inserts a snippet (|vim.snippet|): type the bloc name, then press
+<Tab> to move to the state and any other placeholders. The buffer is
+formatted once the snippet is finished.
+
 The actions come from a small built-in language server named "flutter-bloc",
 so they appear next to those from dartls. Requires the dart tree-sitter
-parser. The buffer is formatted afterwards when an LSP client with
-formatting is attached.
+parser. Formatting uses any attached LSP client that supports it.
 
 ==============================================================================
 SNIPPETS                                        *flutter-bloc-snippets*
