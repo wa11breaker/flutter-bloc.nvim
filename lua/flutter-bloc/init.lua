@@ -1,126 +1,110 @@
 local util = require("flutter-bloc.util")
-local code_action = require("flutter-bloc.code_action")
+local templates = require("flutter-bloc.templates")
 
 local M = {}
 
-M.opts = {}
-
 local defaults = {
-    bloc_type = 'default', -- 'default', 'equatable', 'freezed'
+    bloc_type = "default", -- "default", "equatable" or "freezed"
     use_sealed_classes = false,
     enable_code_actions = true,
 }
 
+M.opts = vim.deepcopy(defaults)
+
+-- Files generated for each kind; the first one is opened afterwards.
+local parts = {
+    bloc = { "bloc", "state", "event" },
+    cubit = { "cubit", "state" },
+}
+
 function M.setup(options)
-    -- Merge user options with defaults
-    M.opts = vim.tbl_deep_extend("force", {}, defaults, options or {})
-    if M.opts.enable_code_actions then
-        code_action.setup()
+    M.opts = vim.tbl_deep_extend("force", vim.deepcopy(defaults), options or {})
+
+    if not templates.bloc[M.opts.bloc_type] then
+        util.notify("Unknown bloc_type '" .. tostring(M.opts.bloc_type) .. "', using 'default'", vim.log.levels.WARN)
+        M.opts.bloc_type = "default"
     end
+
+    if M.opts.enable_code_actions then
+        require("flutter-bloc.code_action").setup()
+    end
+end
+
+local function default_dir(kind)
+    local buf_name = vim.api.nvim_buf_get_name(0)
+    local base = (buf_name ~= "" and vim.bo.buftype == "") and vim.fs.dirname(buf_name)
+        or vim.fs.joinpath(vim.fn.getcwd(), "lib")
+    return vim.fn.fnamemodify(vim.fs.joinpath(base, kind), ":~:.") .. "/"
+end
+
+--- Writes the bloc/cubit files for `name` into `dir` and opens the main file.
+function M.generate(kind, name, dir)
+    local sealed = M.opts.use_sealed_classes
+    local vars = {
+        name = name,
+        file = util.to_snake(name),
+        kind = kind,
+        class_modifier = sealed and "sealed" or "abstract",
+        subclass_modifier = sealed and "final " or "",
+    }
+
+    local files, existing = {}, {}
+    for _, part in ipairs(parts[kind]) do
+        local path = vim.fs.joinpath(dir, vars.file .. "_" .. part .. ".dart")
+        table.insert(files, { path = path, template = templates[part][M.opts.bloc_type] })
+        if vim.uv.fs_stat(path) then
+            table.insert(existing, vim.fs.basename(path))
+        end
+    end
+
+    if #existing > 0 then
+        local msg = "Overwrite " .. table.concat(existing, ", ") .. "?"
+        if vim.fn.confirm(msg, "&Yes\n&No", 2) ~= 1 then
+            return
+        end
+    end
+
+    vim.fn.mkdir(dir, "p")
+    for _, file in ipairs(files) do
+        local ok, err = util.write_file(file.path, util.render(file.template, vars))
+        if not ok then
+            util.notify("Failed to write " .. file.path .. ": " .. err, vim.log.levels.ERROR)
+            return
+        end
+    end
+
+    vim.cmd.edit(vim.fn.fnameescape(files[1].path))
+end
+
+local function create(kind)
+    local label = kind:sub(1, 1):upper() .. kind:sub(2)
+
+    vim.ui.input({ prompt = label .. " name: " }, function(input)
+        if input == nil then
+            return
+        end
+        local name = util.to_pascal(vim.trim(input))
+        if not name:match("^%u%w*$") then
+            util.notify("Invalid " .. kind .. " name: '" .. input .. "'", vim.log.levels.ERROR)
+            return
+        end
+
+        vim.ui.input({ prompt = label .. " path: ", default = default_dir(kind), completion = "dir" }, function(dir)
+            dir = dir and vim.trim(dir) or ""
+            if dir == "" then
+                return
+            end
+            M.generate(kind, name, vim.fs.normalize(vim.fn.expand(dir)))
+        end)
+    end)
 end
 
 function M.create_bloc()
-    local bloc_name = vim.fn.input("Bloc name: ")
-    if bloc_name == "" then
-        print('The bloc name must not be empty')
-        return
-    end
-
-    -- Get block path from user
-    -- Get buffer directory; if no buffer is open, get the curren
-    local current_directory = util.get_current_buffer_path()
-    if current_directory == nil then
-        current_directory = vim.fn.getcwd() .. '/lib/'
-    end
-
-    local bloc_path = vim.fn.input("Bloc path: ", current_directory .. 'bloc/')
-    if bloc_path == "" then
-        print('The bloc path must not be empty')
-        return
-    end
-
-    local snake_case_bloc_name = util.camel_to_snake(bloc_name)
-    vim.fn.mkdir(bloc_path, "p")
-
-    local bloc_type = M.opts.bloc_type
-    local use_sealed_classes = M.opts.use_sealed_classes
-    local templates = {
-        require("flutter-bloc.templates.bloc").create_bloc(bloc_name, bloc_type),
-        require("flutter-bloc.templates.bloc_state").create_state(bloc_name, bloc_type, use_sealed_classes),
-        require("flutter-bloc.templates.bloc_event").create_event(bloc_name, bloc_type, use_sealed_classes),
-    }
-
-    local files = {
-        snake_case_bloc_name .. "_bloc.dart",
-        snake_case_bloc_name .. "_state.dart",
-        snake_case_bloc_name .. "_event.dart",
-    }
-
-    for i, file in ipairs(files) do
-        local file_full_path = bloc_path .. file
-        local f = io.open(file_full_path, "w")
-        if not f then
-            print("Error creating file: " .. file_full_path)
-            return
-        end
-
-        f:write(templates[i])
-        f:close()
-    end
-
-    -- Open bloc file after creating it
-    vim.cmd("edit " .. bloc_path .. files[1])
+    create("bloc")
 end
 
 function M.create_cubit()
-    local cubit_name = vim.fn.input("Cubit name: ")
-    if cubit_name == "" then
-        print('The cubit name must not be empty')
-        return
-    end
-
-    -- Get block path from user
-    -- Get buffer directory; if no buffer is open, get the curren
-    local current_directory = util.get_current_buffer_path()
-    if current_directory == nil then
-        current_directory = vim.fn.getcwd() .. '/lib/'
-    end
-
-    local cubit_pat = vim.fn.input("Cubit path: ", current_directory .. 'cubit/')
-    if cubit_pat == "" then
-        print('The cubit path must not be empty')
-        return
-    end
-
-    local snake_case_cubit_name = util.camel_to_snake(cubit_name)
-    vim.fn.mkdir(cubit_pat, "p")
-
-    local bloc_type = M.opts.bloc_type
-    local use_sealed_classes = M.opts.use_sealed_classes
-    local templates = {
-        require("flutter-bloc.templates.cubit").create_cubit(cubit_name, bloc_type),
-        require("flutter-bloc.templates.cubit_state").create_state(cubit_name, bloc_type, use_sealed_classes),
-    }
-
-    local files = {
-        snake_case_cubit_name .. "_cubit.dart",
-        snake_case_cubit_name .. "_state.dart",
-    }
-
-    for i, file in ipairs(files) do
-        local file_full_path = cubit_pat .. file
-        local f = io.open(file_full_path, "w")
-        if not f then
-            print("Error creating file: " .. file_full_path)
-            return
-        end
-
-        f:write(templates[i])
-        f:close()
-    end
-
-    -- Open bloc file after creating it
-    vim.cmd("edit " .. cubit_pat .. files[1])
+    create("cubit")
 end
 
 return M
