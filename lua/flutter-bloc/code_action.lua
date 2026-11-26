@@ -94,57 +94,133 @@ function M.widget_range(bufnr, node)
     return { start_row, start_col, end_row, end_col }
 end
 
-function M.wrap(bufnr, range, template)
-    local sr, sc, er, ec = unpack(range)
-    local widget = table.concat(vim.api.nvim_buf_get_text(bufnr, sr, sc, er, ec, {}), "\n")
-    local lines = vim.split(util.render(template, { widget = widget }), "\n")
+local FORMAT_COMMAND = "flutter-bloc.format"
 
-    vim.api.nvim_buf_set_text(bufnr, sr, sc, er, ec, lines)
-
+local function format(bufnr)
     if #vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" }) > 0 then
         pcall(vim.cmd.undojoin)
         vim.lsp.buf.format({ bufnr = bufnr, async = false })
     end
 end
 
-function M.setup()
-    local ok, null_ls = pcall(require, "null-ls")
-    if not ok then
-        util.notify("Code actions require nvimtools/none-ls.nvim", vim.log.levels.WARN)
-        return
+--- LSP code actions that wrap the widget at (row, col) with each bloc widget.
+function M.code_actions(bufnr, row, col)
+    local ok, parser = pcall(vim.treesitter.get_parser, bufnr, "dart")
+    if not ok or not parser then
+        return {}
     end
-    if null_ls.is_registered("flutter-bloc") then
-        return
+    parser:parse()
+
+    local range = M.widget_range(bufnr, parser:named_node_for_range({ row, col, row, col }))
+    if not range then
+        return {}
     end
 
-    null_ls.register({
+    local sr, sc, er, ec = unpack(range)
+    local widget = table.concat(vim.api.nvim_buf_get_text(bufnr, sr, sc, er, ec, {}), "\n")
+    local uri = vim.uri_from_bufnr(bufnr)
+
+    local actions = {}
+    for _, wrapper in ipairs(wrappers) do
+        table.insert(actions, {
+            title = wrapper.title,
+            kind = "refactor.rewrite",
+            edit = {
+                changes = {
+                    [uri] = {
+                        {
+                            range = {
+                                start = { line = sr, character = sc },
+                                ["end"] = { line = er, character = ec },
+                            },
+                            newText = util.render(wrapper.template, { widget = widget }),
+                        },
+                    },
+                },
+            },
+            command = { title = "Format", command = FORMAT_COMMAND },
+        })
+    end
+    return actions
+end
+
+local handlers = {
+    initialize = function()
+        -- utf-8 positions match tree-sitter byte columns
+        return { capabilities = { codeActionProvider = true, positionEncoding = "utf-8" } }
+    end,
+    ["textDocument/codeAction"] = function(params)
+        local pos = params.range.start
+        return M.code_actions(vim.uri_to_bufnr(params.textDocument.uri), pos.line, pos.character)
+    end,
+}
+
+--- Minimal in-process language server that only provides code actions.
+local function server(dispatchers)
+    local closing, request_id = false, 0
+
+    local function stop()
+        if not closing then
+            closing = true
+            dispatchers.on_exit(0, 15)
+        end
+    end
+
+    return {
+        request = function(method, params, callback)
+            request_id = request_id + 1
+            vim.schedule(function()
+                local handler = handlers[method]
+                local ok, result = pcall(handler or function() end, params)
+                callback(not ok and { code = -32603, message = tostring(result) } or nil, ok and result or nil)
+            end)
+            return true, request_id
+        end,
+        notify = function(method)
+            if method == "exit" then
+                stop()
+            end
+            return true
+        end,
+        is_closing = function()
+            return closing
+        end,
+        terminate = stop,
+    }
+end
+
+local function attach(bufnr)
+    vim.lsp.start({
         name = "flutter-bloc",
-        method = null_ls.methods.CODE_ACTION,
-        filetypes = { "dart" },
-        generator = {
-            fn = function(params)
-                local ok_node, node = pcall(vim.treesitter.get_node, {
-                    bufnr = params.bufnr,
-                    pos = { params.row - 1, params.col },
-                })
-                local range = ok_node and M.widget_range(params.bufnr, node)
-                if not range then
-                    return
-                end
-
-                local actions = {}
-                for _, wrapper in ipairs(wrappers) do
-                    table.insert(actions, {
-                        title = wrapper.title,
-                        action = function()
-                            M.wrap(params.bufnr, range, wrapper.template)
-                        end,
-                    })
-                end
-                return actions
+        cmd = server,
+        commands = {
+            [FORMAT_COMMAND] = function(_, ctx)
+                format(ctx.bufnr)
             end,
         },
+    }, {
+        bufnr = bufnr,
+        reuse_client = function(client, config)
+            return client.name == config.name
+        end,
     })
+end
+
+function M.setup()
+    vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("flutter-bloc", { clear = true }),
+        pattern = "dart",
+        callback = function(args)
+            attach(args.buf)
+        end,
+    })
+
+    -- Dart buffers opened before setup() ran.
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].filetype == "dart" then
+            attach(bufnr)
+        end
+    end
 end
 
 return M
