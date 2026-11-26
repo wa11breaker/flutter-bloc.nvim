@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 {
   'wa11breaker/flutter-bloc.nvim',
   dependencies = {
-      "nvimtools/none-ls.nvim", -- Required for code actions
+      "nvimtools/none-ls.nvim", -- Optional, only needed for code actions
   },
   opts = {
     bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 use {
   'wa11breaker/flutter-bloc.nvim',
   requires = {
-    'nvimtools/none-ls.nvim',
+    'nvimtools/none-ls.nvim', -- Optional, only needed for code actions
   },
   config = function()
     require('flutter-bloc').setup({
@@ -67,6 +67,8 @@ use {
 
 - `use_sealed_classes`: Enables or disables sealed classes generation
 
+- `enable_code_actions`: Registers the "Wrap with ..." code actions (requires [none-ls.nvim](https://github.com/nvimtools/none-ls.nvim))
+
 ## Usage
 
 ### Built-in Commands
@@ -76,7 +78,9 @@ Commands
 - `:FlutterCreateBloc` - Create a new Bloc
 - `:FlutterCreateCubit` - Create a new Cubit
 
-Code Actions
+The name can be typed in any case (`counter`, `user_profile` or `UserProfile`); classes are generated in PascalCase and files in snake_case.
+
+Code Actions (place the cursor on a widget constructor, e.g. `Text(...)`)
 
 - Wrap with `BlocBuilder`
 - Wrap with `BlocSelector`

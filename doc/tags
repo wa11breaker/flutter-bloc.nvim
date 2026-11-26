@@ -1,3 +1,7 @@
+:FlutterCreateBloc	flutter-bloc.txt	/*:FlutterCreateBloc*
+:FlutterCreateCubit	flutter-bloc.txt	/*:FlutterCreateCubit*
+flutter-bloc-code-actions	flutter-bloc.txt	/*flutter-bloc-code-actions*
+flutter-bloc-configuration	flutter-bloc.txt	/*flutter-bloc-configuration*
 flutter-bloc-contents	flutter-bloc.txt	/*flutter-bloc-contents*
 flutter-bloc-features	flutter-bloc.txt	/*flutter-bloc-features*
 flutter-bloc-installation	flutter-bloc.txt	/*flutter-bloc-installation*

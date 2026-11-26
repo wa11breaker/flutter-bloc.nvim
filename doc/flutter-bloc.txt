@@ -7,7 +7,9 @@ CONTENTS                                        *flutter-bloc-contents*
 Introduction                                    |flutter-bloc-introduction|
 Features                                        |flutter-bloc-features|
 Installation                                    |flutter-bloc-installation|
+Configuration                                   |flutter-bloc-configuration|
 Usage                                           |flutter-bloc-usage|
+Code actions                                    |flutter-bloc-code-actions|
 ==============================================================================
 INTRODUCTION                                    *flutter-bloc-introduction*
 
@@ -17,27 +19,72 @@ This is a Neovim plugin for generating BLoC and Cubit boilerplate code.
 FEATURES                                        *flutter-bloc-features*
 - Generate BLoC boilerplate code
 - Generate Cubit boilerplate code
+- Code actions to wrap widgets with bloc widgets
 
 ==============================================================================
 INSTALLATION                                    *flutter-bloc-installation*
 - With lazy.nvim:
-{
-  'wa11breaker/flutter-bloc.nvim'
-}
-
+>lua
+    {
+      'wa11breaker/flutter-bloc.nvim',
+      dependencies = { 'nvimtools/none-ls.nvim' }, -- optional, for code actions
+      opts = {},
+    }
+<
 - With packer.nvim:
-use {
-  'wa11breaker/flutter-bloc.nvim'
-}
+>lua
+    use {
+      'wa11breaker/flutter-bloc.nvim',
+      requires = { 'nvimtools/none-ls.nvim' }, -- optional, for code actions
+      config = function() require('flutter-bloc').setup() end,
+    }
+<
+==============================================================================
+CONFIGURATION                                   *flutter-bloc-configuration*
 
+Defaults:
+>lua
+    require('flutter-bloc').setup({
+      bloc_type = 'default',      -- 'default', 'equatable' or 'freezed'
+      use_sealed_classes = false, -- 'sealed' base classes instead of 'abstract'
+      enable_code_actions = true, -- requires none-ls.nvim
+    })
+<
 ==============================================================================
 USAGE                                           *flutter-bloc-usage*
-This plugin provides two commands for generating boilerplate code:
-- `FlutterCreateBloc`
-- `FlutterCreateCubit`
 
-Alternatively, users can define their custom commands.
+                                                *:FlutterCreateBloc*
+:FlutterCreateBloc      Prompt for a name and path, then create the bloc,
+                        event and state files.
 
-Example custom key mappings in Lua:
-vim.keymap.set("n", "<Leader>cfb", "<cmd>lua require('flutter-bloc').create_bloc()<cr>", { desc = '[C]reate [F]lutter [B]loc' })
-vim.keymap.set("n", "<Leader>cfc", "<cmd>lua require('flutter-bloc').create_cubit()<cr>", { desc = '[C]reate [F]lutter [C]ubit' })
+                                                *:FlutterCreateCubit*
+:FlutterCreateCubit     Prompt for a name and path, then create the cubit
+                        and state files.
+
+The name can be typed in any case (`counter`, `user_profile`, `UserProfile`).
+Existing files are only overwritten after confirmation.
+
+Example key mappings:
+>lua
+    vim.keymap.set("n", "<Leader>cfb", require('flutter-bloc').create_bloc,
+      { desc = '[C]reate [F]lutter [B]loc' })
+    vim.keymap.set("n", "<Leader>cfc", require('flutter-bloc').create_cubit,
+      { desc = '[C]reate [F]lutter [C]ubit' })
+<
+==============================================================================
+CODE ACTIONS                                    *flutter-bloc-code-actions*
+
+With the cursor on a widget constructor such as `Text(...)`,
+`const Text(...)` or `Foo.named(...)`, the following actions are offered:
+
+- Wrap with BlocBuilder
+- Wrap with BlocSelector
+- Wrap with BlocListener
+- Wrap with BlocConsumer
+- Wrap with BlocProvider
+- Wrap with RepositoryProvider
+
+Requires none-ls.nvim and the dart tree-sitter parser. The buffer is
+formatted afterwards when an LSP client with formatting is attached.
+
+ vim:tw=78:ts=8:ft=help:norl:
