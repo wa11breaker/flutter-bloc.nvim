@@ -9,6 +9,7 @@ Features                                        |flutter-bloc-features|
 Installation                                    |flutter-bloc-installation|
 Configuration                                   |flutter-bloc-configuration|
 Usage                                           |flutter-bloc-usage|
+File explorers                                  |flutter-bloc-explorers|
 Code actions                                    |flutter-bloc-code-actions|
 ==============================================================================
 INTRODUCTION                                    *flutter-bloc-introduction*
@@ -52,14 +53,18 @@ Defaults:
 USAGE                                           *flutter-bloc-usage*
 
                                                 *:FlutterCreateBloc*
-:FlutterCreateBloc      Prompt for a name and path, then create the bloc,
+:FlutterCreateBloc [dir]
+                        Prompt for a name and path, then create the bloc,
                         event and state files.
 
                                                 *:FlutterCreateCubit*
-:FlutterCreateCubit     Prompt for a name and path, then create the cubit
+:FlutterCreateCubit [dir]
+                        Prompt for a name and path, then create the cubit
                         and state files.
 
 The name can be typed in any case (`counter`, `user_profile`, `UserProfile`).
+The suggested path is `[dir]/bloc/` (or `cubit/`), where [dir] defaults to
+the folder under the cursor in a file explorer, or the current file's folder.
 Existing files are only overwritten after confirmation.
 
 Example key mappings:
@@ -68,6 +73,28 @@ Example key mappings:
       { desc = '[C]reate [F]lutter [B]loc' })
     vim.keymap.set("n", "<Leader>cfc", require('flutter-bloc').create_cubit,
       { desc = '[C]reate [F]lutter [C]ubit' })
+<
+==============================================================================
+FILE EXPLORERS                                  *flutter-bloc-explorers*
+
+Run the commands from netrw, oil.nvim, nvim-tree, neo-tree or mini.files to
+create the bloc inside the folder under the cursor. The new file opens in
+the editing window, not the explorer.
+
+Other explorers can be added by filetype. The function returns the file or
+folder under the cursor:
+>lua
+    require('flutter-bloc').setup({
+      explorers = {
+        ['my-explorer'] = function(bufnr)
+          return require('my-explorer').get_path_under_cursor()
+        end,
+      },
+    })
+<
+Or pass the folder directly:
+>lua
+    require('flutter-bloc').create_bloc({ dir = '/path/to/feature' })
 <
 ==============================================================================
 CODE ACTIONS                                    *flutter-bloc-code-actions*

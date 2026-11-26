@@ -50,9 +50,6 @@ use {
 
 ## Configuration Options
 
-> [!NOTE]
-> Currently doesn't support plugin invocation from tree explorer to generate bloc inside a folder.
-
 - `bloc_type`: Specifies the type of BLoC generation
 
   - `'default'`: Standard BLoC generation
@@ -69,8 +66,8 @@ use {
 
 Commands
 
-- `:FlutterCreateBloc` - Create a new Bloc
-- `:FlutterCreateCubit` - Create a new Cubit
+- `:FlutterCreateBloc [dir]` - Create a new Bloc
+- `:FlutterCreateCubit [dir]` - Create a new Cubit
 
 The name can be typed in any case (`counter`, `user_profile` or `UserProfile`); classes are generated in PascalCase and files in snake_case.
 
@@ -82,6 +79,29 @@ Code Actions (place the cursor on a widget constructor, e.g. `Text(...)`)
 - Wrap with `BlocConsumer`
 - Wrap with `BlocProvider`
 - Wrap with `RepositoryProvider`
+
+### File Explorers
+
+Run the commands from a file explorer to create the bloc inside the folder under the cursor.
+netrw, [oil.nvim](https://github.com/stevearc/oil.nvim), [nvim-tree](https://github.com/nvim-tree/nvim-tree.lua), [neo-tree](https://github.com/nvim-neo-tree/neo-tree.nvim) and [mini.files](https://github.com/echasnovski/mini.files) work out of the box.
+
+For other explorers, map their filetype to a function returning the path under the cursor:
+
+```lua
+require('flutter-bloc').setup({
+  explorers = {
+    ['my-explorer'] = function(bufnr)
+      return require('my-explorer').get_path_under_cursor()
+    end,
+  },
+})
+```
+
+Or pass the folder directly, e.g. from an explorer keymap:
+
+```lua
+require('flutter-bloc').create_bloc({ dir = '/path/to/feature' })
+```
 
 ### Custom Key Mappings
 
