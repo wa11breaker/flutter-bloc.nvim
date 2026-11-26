@@ -25,9 +25,6 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 ```lua
 {
   'wa11breaker/flutter-bloc.nvim',
-  dependencies = {
-      "nvimtools/none-ls.nvim", -- Optional, only needed for code actions
-  },
   opts = {
     bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
     use_sealed_classes = false,
@@ -41,9 +38,6 @@ https://github.com/user-attachments/assets/9101c829-bfb2-49b6-9306-6b2fb8785b8c
 ```lua
 use {
   'wa11breaker/flutter-bloc.nvim',
-  requires = {
-    'nvimtools/none-ls.nvim', -- Optional, only needed for code actions
-  },
   config = function()
     require('flutter-bloc').setup({
       bloc_type = 'default', -- Choose from: 'default', 'equatable', 'freezed'
@@ -67,7 +61,7 @@ use {
 
 - `use_sealed_classes`: Enables or disables sealed classes generation
 
-- `enable_code_actions`: Registers the "Wrap with ..." code actions (requires [none-ls.nvim](https://github.com/nvimtools/none-ls.nvim))
+- `enable_code_actions`: Adds the "Wrap with ..." actions to Neovim's native code actions (`vim.lsp.buf.code_action()`, `gra` by default). Requires the dart tree-sitter parser.
 
 ## Usage
 

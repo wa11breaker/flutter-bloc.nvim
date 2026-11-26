@@ -27,7 +27,6 @@ INSTALLATION                                    *flutter-bloc-installation*
 >lua
     {
       'wa11breaker/flutter-bloc.nvim',
-      dependencies = { 'nvimtools/none-ls.nvim' }, -- optional, for code actions
       opts = {},
     }
 <
@@ -35,7 +34,6 @@ INSTALLATION                                    *flutter-bloc-installation*
 >lua
     use {
       'wa11breaker/flutter-bloc.nvim',
-      requires = { 'nvimtools/none-ls.nvim' }, -- optional, for code actions
       config = function() require('flutter-bloc').setup() end,
     }
 <
@@ -47,7 +45,7 @@ Defaults:
     require('flutter-bloc').setup({
       bloc_type = 'default',      -- 'default', 'equatable' or 'freezed'
       use_sealed_classes = false, -- 'sealed' base classes instead of 'abstract'
-      enable_code_actions = true, -- requires none-ls.nvim
+      enable_code_actions = true,
     })
 <
 ==============================================================================
@@ -75,7 +73,7 @@ Example key mappings:
 CODE ACTIONS                                    *flutter-bloc-code-actions*
 
 With the cursor on a widget constructor such as `Text(...)`,
-`const Text(...)` or `Foo.named(...)`, the following actions are offered:
+`const Text(...)` or `Foo.named(...)`, |vim.lsp.buf.code_action()| offers:
 
 - Wrap with BlocBuilder
 - Wrap with BlocSelector
@@ -84,7 +82,9 @@ With the cursor on a widget constructor such as `Text(...)`,
 - Wrap with BlocProvider
 - Wrap with RepositoryProvider
 
-Requires none-ls.nvim and the dart tree-sitter parser. The buffer is
-formatted afterwards when an LSP client with formatting is attached.
+The actions come from a small built-in language server named "flutter-bloc",
+so they appear next to those from dartls. Requires the dart tree-sitter
+parser. The buffer is formatted afterwards when an LSP client with
+formatting is attached.
 
  vim:tw=78:ts=8:ft=help:norl:
